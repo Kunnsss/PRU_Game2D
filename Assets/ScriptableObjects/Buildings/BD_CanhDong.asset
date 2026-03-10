@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643bb400fd5ae3540b4e59028e808221, type: 3}
+  m_Name: BD_CanhDong
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: "Canh \u0110\u1ED3ng L\xFAa"
+  sprite: {fileID: 0}
+  unlockCost: 0
+  buildingColor: {r: 0.9607843, g: 0.84313726, b: 0.43137255, a: 1}
+  outputItem: {fileID: 11400000, guid: 9c3e8b4059bf3594a8934644148925e9, type: 2}
+  productionTime: 12
+  prefab: {fileID: 334129938960698484, guid: 53c58be009f61d64d9bd1ddb35236127, type: 3}

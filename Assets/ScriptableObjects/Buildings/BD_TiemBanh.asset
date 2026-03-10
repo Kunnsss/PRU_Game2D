@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643bb400fd5ae3540b4e59028e808221, type: 3}
+  m_Name: BD_TiemBanh
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: "Ti\u1EC7m B\xE1nh"
+  sprite: {fileID: 0}
+  unlockCost: 120
+  buildingColor: {r: 0.99215686, g: 0.4745098, b: 0.65882355, a: 1}
+  outputItem: {fileID: 11400000, guid: caceae611d2fee444b2d3206a37b20c2, type: 2}
+  productionTime: 35
+  prefab: {fileID: 5316058003466537293, guid: 3b98078ff776f79428d54fd93f32f7cf, type: 3}

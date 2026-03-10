@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643bb400fd5ae3540b4e59028e808221, type: 3}
+  m_Name: BD_BepNau
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: "B\u1EBFp N\u1EA5u"
+  sprite: {fileID: 0}
+  unlockCost: 60
+  buildingColor: {r: 0.93333334, g: 0.3529412, b: 0.14117648, a: 1}
+  outputItem: {fileID: 11400000, guid: daee83fbb773b6c4aacb84bf0c4c3b35, type: 2}
+  productionTime: 18
+  prefab: {fileID: 1230989480470034562, guid: b69f37386fd2fef49bee16e209015506, type: 3}

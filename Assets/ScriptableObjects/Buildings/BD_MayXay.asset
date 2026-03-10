@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 643bb400fd5ae3540b4e59028e808221, type: 3}
+  m_Name: BD_MayXay
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  buildingName: "M\xE1y Xay"
+  sprite: {fileID: 0}
+  unlockCost: 80
+  buildingColor: {r: 0.63529414, g: 0.60784316, b: 0.99607843, a: 1}
+  outputItem: {fileID: 11400000, guid: dd5fc493753176748af6993d24faf6c4, type: 2}
+  productionTime: 25
+  prefab: {fileID: 2737867738478380547, guid: 6959a63ea7f178840b6bdb807cb5bbbb, type: 3}

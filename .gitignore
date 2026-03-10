@@ -1,0 +1,40 @@
+﻿# ===============================
+# UNITY - File tạm, tự sinh lại
+# ===============================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+MemoryCaptures/
+Recordings/
+
+# Unity3D generated meta files
+*.pidb
+*.pidb.meta
+
+# Unity3D Generated File On Crash Reports
+sysinfo.txt
+
+# ===============================
+# VISUAL STUDIO
+# ===============================
+.vs/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userosscache
+*.userprefs
+*.unityproj
+
+# ===============================
+# HỆ ĐIỀU HÀNH
+# ===============================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
