@@ -52,7 +52,7 @@ cd ten-du-an
 ## 📁 Cấu Trúc Dự Án
 
 ```
- ten-du-an/
+ PRU_Game_2D/
 ├── 📂 Assets/
 │   ├── 📂 Scripts/        # Code C# game logic
 │   ├── 📂 Scenes/         # Các scene Unity
