@@ -1,8 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
+
+    [Header("UI")]
+    public NamePromptPanelController namePromptPanel;
 
     public enum GameState { Menu, Playing, GameOver }
     public GameState State { get; private set; }
@@ -17,7 +20,7 @@ public class GameManager : MonoBehaviour
     {
         // Lắng nghe sự kiện hết giờ
         TimeSystem.Instance.onTimeUp.AddListener(OnTimeUp);
-        StartGame();
+        EnsurePlayerNameAndStart();
     }
 
     public void StartGame()
@@ -30,6 +33,25 @@ public class GameManager : MonoBehaviour
         Debug.Log("Game bat dau!");
     }
 
+    void EnsurePlayerNameAndStart()
+    {
+        if (!PlayerProfile.HasPlayerName())
+        {
+            State = GameState.Menu;
+            if (namePromptPanel != null)
+            {
+                namePromptPanel.Show(StartGame);
+            }
+            else
+            {
+                Debug.LogWarning("NamePromptPanelController chưa được gán - sẽ start game luôn để tránh kẹt.");
+                StartGame();
+            }
+            return;
+        }
+
+        StartGame();
+    }
 
     void OnTimeUp()
     {
@@ -43,6 +65,7 @@ public class GameManager : MonoBehaviour
 
         int finalGold = GoldManager.Instance.GetGold();
         ScoreSystem.Instance.SaveScore(finalGold);
+        LeaderboardService.UpsertBestScore(PlayerProfile.GetPlayerName(), finalGold);
 
         if (HUDManager.Instance != null)
             HUDManager.Instance.ShowResultScreen(finalGold);

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
 public class HUDManager : MonoBehaviour
@@ -28,6 +28,9 @@ public class HUDManager : MonoBehaviour
     {
         // Ẩn result panel lúc đầu
         resultPanel.SetActive(false);
+        // Thu nhỏ panel kết quả để không che quá nhiều màn hình
+        if (resultPanel != null)
+            resultPanel.transform.localScale = new Vector3(0.8f, 0.8f, 1f);
 
         // Lắng nghe events
         GoldManager.Instance.onGoldChanged.AddListener(UpdateGold);
@@ -72,15 +75,11 @@ public class HUDManager : MonoBehaviour
     // ── RESULT SCREEN ─────────────────────
     void OnTimeUp()
     {
+        // Điểm và số lần chơi đã được lưu trong GameManager.OnTimeUp()
         int finalGold = GoldManager.Instance.GetGold();
-        int oldBest = ScoreSystem.Instance.GetHighScore();
-        int totalRuns = ScoreSystem.Instance.GetTotalRuns() + 1;
-
-        // Lưu điểm
-        ScoreSystem.Instance.SaveScore(finalGold);
-
+        int totalRuns = ScoreSystem.Instance.GetTotalRuns();
         int newBest = ScoreSystem.Instance.GetHighScore();
-        int delta = finalGold - oldBest;
+        int delta = finalGold - newBest;
 
         // Hiện result panel
         resultPanel.SetActive(true);
@@ -122,7 +121,20 @@ public class HUDManager : MonoBehaviour
 
         Debug.Log($"Lan choi thu {totalRuns} | Vang: {finalGold} | Ky luc: {newBest}");
 
+        // Auto hiển thị leaderboard top 10
+        LeaderboardUI.ShowTop10();
     }
 
     public void ShowResultScreen(int finalGold) => OnTimeUp();
+
+    void OnEnable()
+    {
+        // Khi game over, bảng xếp hạng sẽ tự hiện (Top 10)
+        // (đảm bảo service đã lưu điểm ở GameManager.OnTimeUp)
+    }
+
+    public void ShowLeaderboardTop10()
+    {
+        LeaderboardUI.ShowTop10();
+    }
 }
