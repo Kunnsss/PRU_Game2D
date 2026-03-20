@@ -3498,6 +3498,8 @@ MonoBehaviour:
   cellSize: 1
   unlockCostPerSlot: 40
   lockedSlotPrefab: {fileID: 0}
+  canhDongData: {fileID: 0}
+  chuongGaData: {fileID: 0}
 --- !u!1 &727429487
 GameObject:
   m_ObjectHideFlags: 0
@@ -9239,7 +9241,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0, g: 0.3921569, b: 0, a: 1}
+  m_BackGroundColor: {r: 0, g: 0.21698111, b: 0, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
