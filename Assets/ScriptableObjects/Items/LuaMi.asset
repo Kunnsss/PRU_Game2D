@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "L\xFAa M\xEC"
   icon: {fileID: 0}
-  productionTime: 12
-  inputItems: []
-  inputAmount: 2
+  productionTime: 2
+  ingredients: []
   sellPrice: 0
   unlockCost: 0

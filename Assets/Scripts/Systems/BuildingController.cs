@@ -12,10 +12,12 @@ public class BuildingController : MonoBehaviour
 
     private bool _isRunning = false;
     private SpriteRenderer _sr;
+    private Animator _animator;
 
     void Start()
     {
         _sr = GetComponent<SpriteRenderer>();
+        _animator = GetComponent<Animator>();
 
         if (data != null)
         {
@@ -23,7 +25,6 @@ public class BuildingController : MonoBehaviour
             if (data.sprite != null) _sr.sprite = data.sprite;
         }
 
-        // Lắng nghe inventory thay đổi → thử sản xuất lại
         InventorySystem.Instance.onInventoryChanged
             .AddListener(OnInventoryChanged);
 
@@ -32,7 +33,6 @@ public class BuildingController : MonoBehaviour
 
     void OnDestroy()
     {
-        // Hủy listener khi building bị xóa
         if (InventorySystem.Instance != null)
             InventorySystem.Instance.onInventoryChanged
                 .RemoveListener(OnInventoryChanged);
@@ -40,7 +40,6 @@ public class BuildingController : MonoBehaviour
 
     void OnInventoryChanged()
     {
-        // Khi inventory thay đổi → thử chạy lại nếu đang idle
         if (!_isRunning)
             TryStartProduction();
     }
@@ -49,21 +48,17 @@ public class BuildingController : MonoBehaviour
     {
         if (_isRunning) return;
         if (data == null || data.outputItem == null) return;
-
-        // Kiểm tra game có đang chạy không
         if (GameManager.Instance.State != GameManager.GameState.Playing)
             return;
 
         var ingredients = data.outputItem.ingredients;
 
-        // Không cần nguyên liệu → canh đồng, chuồng gà
         if (ingredients == null || ingredients.Length == 0)
         {
             StartCoroutine(ProductionLoop());
             return;
         }
 
-        // Cần nguyên liệu → kiểm tra và tiêu thụ
         if (InventorySystem.Instance.ConsumeIngredients(ingredients))
             StartCoroutine(ProductionLoop());
     }
@@ -72,35 +67,49 @@ public class BuildingController : MonoBehaviour
     {
         _isRunning = true;
 
-        // Màu tối hơn = đang sản xuất
         if (_sr && data != null)
             _sr.color = new Color(
                 data.buildingColor.r * 0.7f,
                 data.buildingColor.g * 0.7f,
                 data.buildingColor.b * 0.7f);
 
-        yield return new WaitForSeconds(data.productionTime);
+        float stageDuration = data.productionTime / 3f;
+
+        // Giai đoạn 0: Seedling
+        _animator?.SetInteger("Stage", 0);
+        Debug.Log($"[{data.buildingName}] Stage 0 - Seedling ({stageDuration}s)");
+        yield return new WaitForSeconds(stageDuration);
+
+        // Giai đoạn 1: HalfRipe
+        _animator?.SetInteger("Stage", 1);
+        Debug.Log($"[{data.buildingName}] Stage 1 - HalfRipe ({stageDuration}s)");
+        yield return new WaitForSeconds(stageDuration);
+
+        // Giai đoạn 2: Ripe
+        _animator?.SetInteger("Stage", 2);
+        Debug.Log($"[{data.buildingName}] Stage 2 - Ripe ({stageDuration}s)");
+        yield return new WaitForSeconds(stageDuration);
 
         // Kiểm tra game vẫn đang chạy
         if (GameManager.Instance.State != GameManager.GameState.Playing)
         {
             _isRunning = false;
+            _animator?.SetInteger("Stage", 0);
             if (_sr && data != null) _sr.color = data.buildingColor;
-            yield break;  // dừng coroutine nếu game over
+            yield break;
         }
 
-        // Thêm item vào inventory
+        // Thu hoạch vào inventory
+        Debug.Log($"[{data.buildingName}] Thu hoạch!");
         InventorySystem.Instance.AddItem(data.outputItem);
         onProductionComplete?.Invoke(data.outputItem);
-        Debug.Log($"+ {data.buildingName} san xuat {data.outputItem.itemName}");
 
-        // Trả về màu gốc
         if (_sr && data != null)
             _sr.color = data.buildingColor;
 
         _isRunning = false;
 
-        // Thử vòng tiếp theo
+        // Vòng tiếp theo
         TryStartProduction();
     }
 
@@ -108,6 +117,7 @@ public class BuildingController : MonoBehaviour
     {
         StopAllCoroutines();
         _isRunning = false;
+        _animator?.SetInteger("Stage", 0);
         if (_sr && data != null)
             _sr.color = data.buildingColor;
     }
