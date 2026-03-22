@@ -15,7 +15,7 @@ MonoBehaviour:
   buildingName: "Chu\u1ED3ng G\xE0"
   sprite: {fileID: 0}
   unlockCost: 0
-  buildingColor: {r: 1, g: 0.41960785, b: 0.41960785, a: 1}
+  buildingColor: {r: 1, g: 1, b: 1, a: 1}
   outputItem: {fileID: 11400000, guid: d9b551b0fe41b6a4fbafe06f88c7a210, type: 2}
   productionTime: 15
   prefab: {fileID: 1310865463475963932, guid: 806841ba1430399458db77477cfb734e, type: 3}

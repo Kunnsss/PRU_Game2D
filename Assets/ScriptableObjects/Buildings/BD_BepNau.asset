@@ -17,5 +17,5 @@ MonoBehaviour:
   unlockCost: 60
   buildingColor: {r: 0.93333334, g: 0.3529412, b: 0.14117648, a: 1}
   outputItem: {fileID: 11400000, guid: daee83fbb773b6c4aacb84bf0c4c3b35, type: 2}
-  productionTime: 18
+  productionTime: 2
   prefab: {fileID: 1230989480470034562, guid: b69f37386fd2fef49bee16e209015506, type: 3}

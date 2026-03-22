@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: "Tr\u1EE9ng Chi\xEAn"
   icon: {fileID: 0}
-  productionTime: 18
+  productionTime: 2
   ingredients:
   - item: {fileID: 11400000, guid: d9b551b0fe41b6a4fbafe06f88c7a210, type: 2}
     amount: 2
