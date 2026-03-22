@@ -8,176 +8,239 @@ public class BuildingPlacer : MonoBehaviour
     public BuildingData selectedBuilding;
 
     [Header("Chế độ xóa")]
-    public bool isDeleteMode = false;
+    public bool isDeleteMode;
 
     [Header("Chế độ mở ô")]
-    public bool isUnlockMode = false;
+    public bool isUnlockMode;
 
-    private GameObject _previewObject;
-    private SpriteRenderer _previewSr;
+    private GameObject previewObject;
+    private SpriteRenderer previewRenderer;
 
-    void Awake()
+    private const int GRID_WIDTH = 6;
+    private const int GRID_HEIGHT = 4;
+
+    #region Unity Lifecycle
+
+    private void Awake()
     {
-        if (Instance != null) { Destroy(gameObject); return; }
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
-        CreatePreview();
+        CreatePreviewObject();
     }
 
-    void CreatePreview()
+    private void Update()
     {
-        if (_previewObject != null) Destroy(_previewObject);
-        _previewObject = new GameObject("Preview");
-        _previewSr = _previewObject.AddComponent<SpriteRenderer>();
-        _previewSr.sortingOrder = 10;
-        _previewObject.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
-        _previewObject.SetActive(false);
+        if (IsGameOver()) return;
+
+        if (HandleSpecialModes()) return;
+
+        HandlePlacementMode();
     }
 
-    void Update()
-    {
-        // Dừng khi GameOver
-        if (GameManager.Instance.State == GameManager.GameState.GameOver)
-        {
-            if (_previewObject != null) _previewObject.SetActive(false);
-            return;
-        }
+    #endregion
 
-        // Chế độ mở ô đất
+    #region Preview
+
+    private void CreatePreviewObject()
+    {
+        if (previewObject != null)
+            Destroy(previewObject);
+
+        previewObject = new GameObject("Preview");
+
+        previewRenderer = previewObject.AddComponent<SpriteRenderer>();
+        previewRenderer.sortingOrder = 10;
+
+        previewObject.transform.localScale = new Vector3(0.9f, 0.9f, 1f);
+        previewObject.SetActive(false);
+    }
+
+    private void UpdatePreview(Vector3 position, Color color, Sprite sprite)
+    {
+        previewObject.SetActive(true);
+        previewObject.transform.position = position;
+        previewRenderer.color = color;
+        previewRenderer.sprite = sprite;
+    }
+
+    private void HidePreview()
+    {
+        if (previewObject != null)
+            previewObject.SetActive(false);
+    }
+
+    #endregion
+
+    #region Update Logic
+
+    private bool IsGameOver()
+    {
+        if (GameManager.Instance.State != GameManager.GameState.GameOver)
+            return false;
+
+        HidePreview();
+        return true;
+    }
+
+    private bool HandleSpecialModes()
+    {
         if (isUnlockMode)
         {
             HandleUnlockMode();
-            return;
+            return true;
         }
 
-        // Chế độ xóa
         if (isDeleteMode)
         {
             HandleDeleteMode();
-            return;
+            return true;
         }
 
-        // Không có building được chọn
+        return false;
+    }
+
+    private void HandlePlacementMode()
+    {
         if (selectedBuilding == null)
         {
-            if (_previewObject != null) _previewObject.SetActive(false);
+            HidePreview();
             return;
         }
 
-        // Lấy vị trí chuột
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorld.z = 0;
+        Vector3 mousePos = GetMouseWorldPosition();
+        Vector2Int gridPos = GetGridPosition(mousePos);
 
-        int x = Mathf.FloorToInt(mouseWorld.x);
-        int y = Mathf.FloorToInt(mouseWorld.y);
+        bool canPlace = CanPlaceBuilding(gridPos);
 
-        // Hiện preview
-        _previewObject.SetActive(true);
-        _previewObject.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0);
-
-        bool canPlace = GridManager.Instance.IsEmpty(x, y)
-                     && x >= 0 && x < 6
-                     && y >= 0 && y < 4
-                     && GridManager.Instance.IsSlotUnlocked(x, y);
-
-        _previewSr.color = canPlace
-            ? new Color(0f, 1f, 0f, 0.4f)
-            : new Color(1f, 0f, 0f, 0.4f);
-
-        _previewSr.sprite = selectedBuilding.sprite;
+        UpdatePreview(
+            GetCenteredPosition(gridPos),
+            canPlace ? new Color(0f, 1f, 0f, 0.4f) : new Color(1f, 0f, 0f, 0.4f),
+            selectedBuilding.sprite
+        );
 
         if (Input.GetMouseButtonDown(0) && canPlace)
-            PlaceBuilding(x, y);
+            PlaceBuilding(gridPos);
 
         if (Input.GetKeyDown(KeyCode.Escape))
             CancelPlacement();
     }
 
-    void PlaceBuilding(int x, int y)
+    #endregion
+
+    #region Placement
+
+    private void PlaceBuilding(Vector2Int gridPos)
     {
+        int x = gridPos.x;
+        int y = gridPos.y;
+
         if (!GridManager.Instance.IsSlotUnlocked(x, y))
         {
             Debug.Log($"O ({x},{y}) chua mo khoa!");
             return;
         }
 
-        if (selectedBuilding.unlockCost > 0)
+        if (selectedBuilding.unlockCost > 0 &&
+            !GoldManager.Instance.SpendGold(selectedBuilding.unlockCost))
         {
-            if (!GoldManager.Instance.SpendGold(selectedBuilding.unlockCost))
-            {
-                Debug.Log($"Khong du vang! Can {selectedBuilding.unlockCost}");
-                return;
-            }
+            Debug.Log($"Khong du vang! Can {selectedBuilding.unlockCost}");
+            return;
         }
 
-        Vector3 pos = new Vector3(x + 0.5f, y + 0.5f, 0);
-        GameObject obj = Instantiate(selectedBuilding.prefab, pos, Quaternion.identity);
+        GameObject obj = Instantiate(
+            selectedBuilding.prefab,
+            GetCenteredPosition(gridPos),
+            Quaternion.identity
+        );
 
-        BuildingController bc = obj.GetComponent<BuildingController>();
-        if (bc != null)
-            bc.data = selectedBuilding;
+        BuildingController controller = obj.GetComponent<BuildingController>();
+        if (controller != null)
+            controller.data = selectedBuilding;
 
-        GridManager.Instance.PlaceBuilding(bc, x, y);
+        GridManager.Instance.PlaceBuilding(controller, x, y);
+
         Debug.Log($"Dat {selectedBuilding.buildingName} tai ({x},{y})");
 
         CancelPlacement();
     }
 
-    void HandleDeleteMode()
+    private bool CanPlaceBuilding(Vector2Int pos)
     {
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorld.z = 0;
+        return pos.x >= 0 && pos.x < GRID_WIDTH &&
+               pos.y >= 0 && pos.y < GRID_HEIGHT &&
+               GridManager.Instance.IsEmpty(pos.x, pos.y) &&
+               GridManager.Instance.IsSlotUnlocked(pos.x, pos.y);
+    }
 
-        int x = Mathf.FloorToInt(mouseWorld.x);
-        int y = Mathf.FloorToInt(mouseWorld.y);
+    #endregion
 
-        bool hasBuilding = x >= 0 && x < 6 && y >= 0 && y < 4
-                        && !GridManager.Instance.IsEmpty(x, y);
+    #region Delete Mode
 
-        _previewObject.SetActive(hasBuilding);
+    private void HandleDeleteMode()
+    {
+        Vector2Int gridPos = GetGridPosition(GetMouseWorldPosition());
+
+        bool hasBuilding = IsInsideGrid(gridPos) &&
+                           !GridManager.Instance.IsEmpty(gridPos.x, gridPos.y);
+
+        previewObject.SetActive(hasBuilding);
+
         if (hasBuilding)
         {
-            _previewObject.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0);
-            _previewSr.color = new Color(1f, 0f, 0f, 0.5f);
+            UpdatePreview(
+                GetCenteredPosition(gridPos),
+                new Color(1f, 0f, 0f, 0.5f),
+                null
+            );
         }
 
         if (Input.GetMouseButtonDown(0) && hasBuilding)
         {
-            bool result = GridManager.Instance.RemoveBuilding(x, y);
-            Debug.Log(result ? $"Xoa thanh cong tai ({x},{y})" : "Xoa that bai!");
+            bool result = GridManager.Instance.RemoveBuilding(gridPos.x, gridPos.y);
+            Debug.Log(result ? $"Xoa thanh cong tai ({gridPos.x},{gridPos.y})" : "Xoa that bai!");
         }
 
         if (Input.GetKeyDown(KeyCode.Escape))
             SetDeleteMode(false);
     }
 
-    void HandleUnlockMode()
+    #endregion
+
+    #region Unlock Mode
+
+    private void HandleUnlockMode()
     {
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseWorld.z = 0;
+        Vector2Int gridPos = GetGridPosition(GetMouseWorldPosition());
 
-        int x = Mathf.FloorToInt(mouseWorld.x);
-        int y = Mathf.FloorToInt(mouseWorld.y);
+        bool isLocked = IsInsideGrid(gridPos) &&
+                        !GridManager.Instance.IsSlotUnlocked(gridPos.x, gridPos.y);
 
-        bool isLocked = x >= 0 && x < 6 && y >= 0 && y < 4
-                     && !GridManager.Instance.IsSlotUnlocked(x, y);
+        previewObject.SetActive(isLocked);
 
-        _previewObject.SetActive(isLocked);
         if (isLocked)
         {
-            _previewObject.transform.position = new Vector3(x + 0.5f, y + 0.5f, 0);
-            _previewSr.color = new Color(1f, 0.8f, 0f, 0.5f);
+            UpdatePreview(
+                GetCenteredPosition(gridPos),
+                new Color(1f, 0.8f, 0f, 0.5f),
+                null
+            );
         }
 
         if (Input.GetMouseButtonDown(0) && isLocked)
         {
-            if (GridManager.Instance.UnlockSlot(x, y))
+            if (GridManager.Instance.UnlockSlot(gridPos.x, gridPos.y))
             {
                 GridManager.Instance.RefreshLockedVisuals();
-                Debug.Log($"Mo o ({x},{y}) thanh cong!");
+                Debug.Log($"Mo o ({gridPos.x},{gridPos.y}) thanh cong!");
             }
             else
             {
@@ -192,24 +255,64 @@ public class BuildingPlacer : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Helpers
+
+    private Vector3 GetMouseWorldPosition()
+    {
+        Vector3 pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        pos.z = 0;
+        return pos;
+    }
+
+    private Vector2Int GetGridPosition(Vector3 worldPos)
+    {
+        return new Vector2Int(
+            Mathf.FloorToInt(worldPos.x),
+            Mathf.FloorToInt(worldPos.y)
+        );
+    }
+
+    private Vector3 GetCenteredPosition(Vector2Int gridPos)
+    {
+        return new Vector3(gridPos.x + 0.5f, gridPos.y + 0.5f, 0);
+    }
+
+    private bool IsInsideGrid(Vector2Int pos)
+    {
+        return pos.x >= 0 && pos.x < GRID_WIDTH &&
+               pos.y >= 0 && pos.y < GRID_HEIGHT;
+    }
+
+    #endregion
+
+    #region Public API
+
     public void SelectBuilding(BuildingData data)
     {
         isDeleteMode = false;
         isUnlockMode = false;
+
         selectedBuilding = data;
-        CreatePreview();
+
+        CreatePreviewObject();
+
         if (data.sprite != null)
-            _previewSr.sprite = data.sprite;
+            previewRenderer.sprite = data.sprite;
+
         Debug.Log($"Da chon: {data.buildingName}");
     }
 
     public void CancelPlacement()
     {
         selectedBuilding = null;
-        if (_previewObject != null)
+
+        if (previewObject != null)
         {
-            _previewObject.SetActive(false);
-            if (_previewSr != null) _previewSr.color = Color.white;
+            previewObject.SetActive(false);
+            if (previewRenderer != null)
+                previewRenderer.color = Color.white;
         }
     }
 
@@ -218,7 +321,8 @@ public class BuildingPlacer : MonoBehaviour
         isDeleteMode = active;
         isUnlockMode = false;
         selectedBuilding = null;
-        if (_previewObject != null) _previewObject.SetActive(false);
+
+        HidePreview();
     }
 
     public void SetUnlockMode(bool active)
@@ -226,7 +330,11 @@ public class BuildingPlacer : MonoBehaviour
         isUnlockMode = active;
         isDeleteMode = false;
         selectedBuilding = null;
-        if (_previewObject != null) _previewObject.SetActive(false);
+
+        HidePreview();
+
         Debug.Log(active ? "Che do mo o: BAT" : "Che do mo o: TAT");
     }
+
+    #endregion
 }
